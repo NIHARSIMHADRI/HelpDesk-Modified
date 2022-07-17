@@ -60,7 +60,13 @@ function Login() {
             <>
             {console.log("You doing anything?")}
             {context.modifyUser(userData)}
-            {navigate(`/helpdesk/${username}`)}
+            {navigate(`/helpdesk/${username}`, {
+                state: {
+                    username: userData.username,
+                    password: userData.password,
+                    logs: userData.logs
+                }
+            })}
             
             </>
         )

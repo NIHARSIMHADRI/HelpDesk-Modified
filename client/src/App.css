@@ -2,6 +2,14 @@ html {
   background-color: grey;
 }
 
+.bg-color {
+  background-color: blue;
+}
+
+.centered {
+  text-align: center;
+}
+
 .input-holder {
   margin-bottom: 30px;
 }
@@ -26,6 +34,11 @@ html {
 
 .container {
   display: flex;
+}
+
+.wisc-logo {
+  width: 250px;
+  height: 400px;
 }
 
 .login-card {

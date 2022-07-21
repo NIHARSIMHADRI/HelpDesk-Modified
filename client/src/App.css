@@ -10,6 +10,10 @@ html {
   color: red;
 }
 
+.success {
+  color: green;
+}
+
 .centered {
   text-align: center;
 }

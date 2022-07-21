@@ -59,12 +59,22 @@ app.route("/users/:username").get(function(req, res){
     });
   });
 
-  app.route("/users/:username/logs/").patch(function(req, res) {
-    UserModel.updateOne({username: req.params.username}, {
-      $push: {
-        logs: "what"
-      }
-    })
+  app.route("/users/:username/logs/").patch(async (req, res) => {
+    try {
+      const username = req.params.username
+      const updates = req.body
+
+      const filter = {username: username}
+      // only add if the log doesn't already exist
+      const change = {$addToSet: {
+        logs: updates.addLog
+      }}
+
+      const result = await UserModel.updateOne(filter, change)
+      res.send(result)
+    } catch (error) {
+      console.log(error)
+    }
   })
 
 app.listen(3001, () => {

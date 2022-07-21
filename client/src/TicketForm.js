@@ -7,18 +7,6 @@ import { Link, useParams } from "react-router-dom"
 import axios from 'axios'
 
 export default function TicketForm() {
-    /*
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
-    const [phoneNumber, setPhoneNumber] = useState("")
-    const [shortDesc, setShortDesc] = useState("")
-    const [desc, setDesc] = useState("")
-    const [category, setCategory] = useState("")
-    const [subcategory, setSubcategory] = useState("")
-    const [priority, setPriority] = useState(1)
-    const [agentOption, setAgentOption] = useState(true)
-    const [agentAssign, setAgentAssign] = useState("")
-    */
 
     // got form validation help from here: https://www.youtube.com/watch?v=EYpdEYK25Dc&t=416s
     const startValues = {name:"", email:"", phoneNumber:"", shortDesc: "", desc: "", category: "", subcategory: "",
@@ -35,6 +23,8 @@ export default function TicketForm() {
     const [submit, setSubmit] = useState(false)
     const [validate, setValidate] = useState(false)
 
+    const [formSuccess, setFormSuccess] = useState(false)
+
     function handleChange(event) {
         const {name, value} = event.target
         setFormValues({
@@ -43,9 +33,6 @@ export default function TicketForm() {
         })
         //console.log(formValues)
     }
-
-    //const [emailError, setEmailError] = useState(true)
-    //const [phoneError, setPhoneError] = useState(true)
 
     const params = useParams()
 
@@ -112,14 +99,12 @@ export default function TicketForm() {
             if (formValues.agentOption === true) {
                 formValues.agentAssign = params.username
 
-                console.log("hi mom")
                 axios.patch(`http://localhost:3001/users/${params.username}/logs/`, {
                     addLog: formValues
                 }, {
                     headers: { 'Content-type': 'application/json; charset=UTF-8' }
                 }).then(response => {
                     console.log(response)
-                    console.log("hi mom")
                 }).catch(error => {
                     console.log(error)
                 })
@@ -130,13 +115,15 @@ export default function TicketForm() {
                     headers: { 'Content-type': 'application/json; charset=UTF-8' }
                 }).then(response => {
                     console.log(response)
-                    console.log("hi mom")
                 }).catch(error => {
                     console.log(error)
                 })
             }
+            setFormSuccess(true)
             //console.log(formValues)
             // appendLog()
+        } else {
+            setFormSuccess(false)
         }
     }, [formErrors])
 
@@ -307,6 +294,7 @@ export default function TicketForm() {
                 <Button variant="primary" type="submit">
                     Submit
                 </Button>
+                {formSuccess && <p className="success">The ticket was successfully submitted!!!</p>}
             </Form>
 
             <br />

@@ -16,7 +16,7 @@ export default function Header(props) {
                     <Nav.Link href={`new-ticket/${props.username}`}>Create New Incident</Nav.Link>
                     <Nav.Link href="all-incidents">All My Incidents</Nav.Link>
                     <Nav.Link href="agent-incidents">Search Agents Incidents</Nav.Link>
-                    <Nav.Link href="feedback">Search Agents Incidents</Nav.Link>
+                    <Nav.Link href="feedback">Suggest Feedback</Nav.Link>
                 </Nav>
             </Navbar>
         </div>

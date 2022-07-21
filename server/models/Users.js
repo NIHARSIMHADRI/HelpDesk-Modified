@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema ({
         type: String,
         required: true
     },
+    logs: []
+    /*
     logs: [{
         description: String,
         shortDescription: String,
@@ -17,6 +19,7 @@ const UserSchema = new mongoose.Schema ({
         requester: String,
         contact: String
     }]
+    */
 })
 
 const UserModel = mongoose.model("users", UserSchema)

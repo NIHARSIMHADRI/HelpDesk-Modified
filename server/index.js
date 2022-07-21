@@ -59,6 +59,14 @@ app.route("/users/:username").get(function(req, res){
     });
   });
 
+  app.route("/users/:username/logs/").patch(function(req, res) {
+    UserModel.updateOne({username: req.params.username}, {
+      $push: {
+        logs: "what"
+      }
+    })
+  })
+
 app.listen(3001, () => {
     console.log("Server is running")
 })

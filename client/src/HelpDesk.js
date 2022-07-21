@@ -2,7 +2,7 @@ import './App.css';
 import {useState, useEffect, useContext} from "react"
 import {Button, Card} from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import {Link, useNavigate, useLocation} from "react-router-dom"
+import {Link, useNavigate, useLocation, useParams} from "react-router-dom"
 import {UserContext} from './UserContext';
 import Header from "./Header"
 
@@ -10,6 +10,8 @@ function HelpDesk(props) {
     const context = useContext(UserContext)
     const [name, setName] = useState("")
     const location = useLocation()
+
+    const params = useParams()
 
     /*
     useEffect(() => {
@@ -22,8 +24,8 @@ function HelpDesk(props) {
 
     return (
         <>
-        <Header username={location.state.username}/>
-        <h1 className='centered'>Welcome to your Helpdesk {location.state.username}</h1>
+        <Header username={params.user}/>
+        <h1 className='centered'>Welcome to your Helpdesk {params.user}</h1>
         </>
     )
 }

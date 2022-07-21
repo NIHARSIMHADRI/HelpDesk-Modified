@@ -1,17 +1,316 @@
-import React, {useState} from "react";
+import React, { isValidElement, useState, useEffect } from "react";
+import { isPossiblePhoneNumber } from 'react-phone-number-input'
+import Header from "./Header.js"
+import Form from 'react-bootstrap/Form'
+import { Button, Col, Row, InputGroup } from "react-bootstrap";
+import { Link, useParams } from "react-router-dom"
+import axios from 'axios'
 
 export default function TicketForm() {
+    /*
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
+    const [phoneNumber, setPhoneNumber] = useState("")
+    const [shortDesc, setShortDesc] = useState("")
+    const [desc, setDesc] = useState("")
+    const [category, setCategory] = useState("")
+    const [subcategory, setSubcategory] = useState("")
+    const [priority, setPriority] = useState(1)
+    const [agentOption, setAgentOption] = useState(true)
+    const [agentAssign, setAgentAssign] = useState("")
+    */
+
+    // got form validation help from here: https://www.youtube.com/watch?v=EYpdEYK25Dc&t=416s
+    const startValues = {name:"", email:"", phoneNumber:"", shortDesc: "", desc: "", category: "", subcategory: "",
+    priority: 1, agentOption: true, agentAssign: ""}
+
+    const [agentThere, setAgentThere] = useState(false)
+
+    const stateNames = {
+        name: "name", email: "email", phoneNumber: "phone number", shortDesc: "short description", desc: "description",
+        category: "category", subcategory: "subcategory", agentAssign: "agent"}
+
+    const [formValues, setFormValues] = useState(startValues)
+    const [formErrors, setFormErrors] = useState({})
+    const [submit, setSubmit] = useState(false)
+    const [validate, setValidate] = useState(false)
+
+    function handleChange(event) {
+        const {name, value} = event.target
+        setFormValues({
+            ...formValues, 
+            [name]: value
+        })
+        //console.log(formValues)
+    }
+
+    //const [emailError, setEmailError] = useState(true)
+    //const [phoneError, setPhoneError] = useState(true)
+
+    const params = useParams()
+
+    // source: https://bobbyhadz.com/blog/react-check-if-email-is-valid
+
+    function isValid(email) {
+        return /\S+@\S+\.\S+/.test(email);
+    }
+
+    /*
+
+    function emailChange(event) {
+        if (isValid(event.target.value)) {
+            setEmailError(false)
+        } else {
+            setEmailError(true)
+        }
+
+        setEmail(event.target.value)
+    }
+
+    function phoneChange(event) {
+        if (isPossiblePhoneNumber(event.target.value)) {
+            setPhoneError(false)
+            console.log("good")
+        } else {
+            console.log("bad")
+            setPhoneError(true)
+        }
+
+        setPhoneNumber(event.target.value)
+        console.log(phoneNumber)
+    }
+    */
+
+    function assignAgent(event) {
+        //console.log(event.target.checked)
+
+        const {name} = event.target
+
+        if (event.target.checked === false) {
+            setFormValues({
+                ...formValues, 
+                [name]: true
+            })
+        } else {
+            setFormValues({
+                ...formValues, 
+                [name]: false
+            })
+        }
+    }
+
+    function handleSubmit(event) {
+        event.preventDefault()
+        setFormErrors(checkVals(formValues))
+        setSubmit(true)
+    }
+
+    useEffect(() => {
+        //console.log(formErrors)
+        if (Object.keys(formErrors).length === 0 && submit) {
+            // default when not assigned to agent
+            if (formValues.agentOption === true) {
+                formValues.agentAssign = params.username
+
+                console.log("hi mom")
+                axios.patch(`http://localhost:3001/users/${params.username}/logs/`, {
+                    addLog: formValues
+                }, {
+                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
+                }).then(response => {
+                    console.log(response)
+                    console.log("hi mom")
+                }).catch(error => {
+                    console.log(error)
+                })
+            } else {
+                axios.patch(`http://localhost:3001/users/${formValues.agentAssign}/logs/`, {
+                    addLog: formValues
+                }, {
+                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
+                }).then(response => {
+                    console.log(response)
+                    console.log("hi mom")
+                }).catch(error => {
+                    console.log(error)
+                })
+            }
+            //console.log(formValues)
+            // appendLog()
+        }
+    }, [formErrors])
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const res = await fetch(`http://localhost:3001/users/${formValues.agentAssign}`);
+                const data = await res.json();
+                //console.log(data)
+                if (data != null) {
+                    setAgentThere(true)
+                } else {
+                    setAgentThere(false)
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        })()
+    }, [validate, formValues.agentAssign])
+
+    /*
+    async function checkAgent(agent) {
+        const res = await fetch(`http://localhost:3001/users/${agent}`);
+        const data = await res.json();
+        if (data != null) {
+            return true
+            //setAgentThere(true)
+        } else {
+            return false
+            //setAgentThere(false)
+        }
+    }
+    */
+    
+    function checkVals(values) {
+        const errors = {}
+
+        if (!isValid(values.email)) {
+            errors.email = "Please use a valid email"
+        }
+
+        if (!isPossiblePhoneNumber(values.phoneNumber)) {
+            errors.phoneNumber = "Please use a phone number in the format specified"
+        }
+
+        //console.log(formValues.desc)
+
+        for (const value in formValues) {
+            //console.log(formValues[value])
+            if (value === "agentAssign") {
+                if (formValues.agentOption === false) {
+                    // make sure the field is filled when option to assign is selected
+                    if (formValues[value] === "") {
+                        errors[value] = `Please don't leave the ${stateNames[value]} as an empty field`
+                    // make sure the agent tryign to assign to is an actual agent
+                    } else {
+                        setValidate(!validate)
+                        
+                        if (!agentThere) {
+                            errors[value] = "Please make sure the agent exists"
+                        }
+                        /*
+                        checkAgent(formValues[value]).then((val) => {
+                            console.log("The val is " + val)
+                            if (val === false) {
+                                errors[value] = "Please make sure the agent exists"
+                            }
+                        })
+                        */
+                        
+                    }
+                }
+            }
+
+            if (formValues[value] === "" && value !== "agentAssign") {
+                errors[value] = `Please don't leave the ${stateNames[value]} as an empty field`
+            }
+        }
+
+        /*
+        formValues.forEach(value => {
+            if (value === "") {
+                errors.value = `Please don't leave the ${stateNames[value]} as an empty field`
+            }
+        })
+        */
+
+        return errors
+    }
+
+    // got bootsrap template from here: https://react-bootstrap.github.io/forms/layout/
 
     return (
         <div className="ticket-form">
-            <label htmlFor="form-name">Name: </label>
-            <input type="text" id="form-name" placeholder="Customer's Name" onChange={event => setName(event.target.value)}/>
+            <Form onSubmit={handleSubmit}>
+
+                <Form.Group className="mb-3 w-50" controlId="formGridAddress1">
+                    <Form.Label>Customer's Full Name </Form.Label>
+                    <Form.Control name="name" onChange={handleChange} placeholder="Name" />
+                    <p className="error">{formErrors.name}</p>
+                </Form.Group>
+
+                <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridEmail">
+                        <Form.Label>Customer's Email</Form.Label>
+                        <Form.Control name="email" onChange={handleChange} placeholder="123@gmail.com" />
+                        <p className="error">{formErrors.email}</p>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridPassword">
+                        <Form.Label>Customer's Phone Number</Form.Label>
+                        <Form.Control name="phoneNumber" onChange={handleChange} placeholder="+1234567890" />
+                        <Form.Text id="passwordHelpBlock" muted>
+                            Phone number should start with + and be followed by 11 digits
+                        </Form.Text>
+                        <p className="error">{formErrors.phoneNumber}</p>
+                    </Form.Group>
+                </Row>
+
+                <Form.Group className="mb-3" controlId="formGridAddress2">
+                    <Form.Label>Short Description</Form.Label>
+                    <Form.Control name="shortDesc" onChange={handleChange} placeholder="Brief Description of Customer's Issue" />
+                    <p className="error">{formErrors.shortDesc}</p>
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formGridAddress2">
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control name="desc" onChange={handleChange} as="textarea" rows="4" columns="3" placeholder="Full Description of Customer's Issue" />
+                    <p className="error">{formErrors.desc}</p>
+                </Form.Group>
+
+                <Row className="mb-3">
+                    <Form.Group as={Col} controlId="formGridCity">
+                        <Form.Label>Category</Form.Label>
+                        <Form.Control name="category" onChange={handleChange} />
+                        <p className="error">{formErrors.category}</p>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridZip">
+                        <Form.Label>Subcategory</Form.Label>
+                        <Form.Control name="subcategory" onChange={handleChange}/>
+                        <p className="error">{formErrors.subcategory}</p>
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridState">
+                        <Form.Label>Priority Level</Form.Label>
+                        <Form.Select name="priority" value={formValues.priority} onChange={handleChange}>
+                            <option value={1}>1</option>
+                            <option value={2}>2</option>
+                            <option value={3}>3</option>
+                        </Form.Select>
+                    </Form.Group>
+                </Row>
+
+                <Row className="mb-2">
+                    <Form.Group as={Col} id="formGridCheckbox">
+                        <Form.Check name="agentOption" type="checkbox" label="Assign to Agent" onClick={assignAgent} />
+                    </Form.Group>
+
+                    <Form.Group as={Col} controlId="formGridZip">
+                        <Form.Label>Assign to Agent</Form.Label>
+                        <Form.Control name="agentAssign" disabled={formValues.agentOption} onChange={handleChange}/>
+                        <p className="error">{formErrors.agentAssign}</p>
+                    </Form.Group>
+
+                </Row>
+
+                <Button variant="primary" type="submit">
+                    Submit
+                </Button>
+            </Form>
+
             <br />
-            <label htmlFor="form-email">Email: </label>
-            <input type="email" id="form-email" placeholder="Customer's Email" onChange={event => setEmail(event.target.value)}/>
-            <h1>This is where the ticket will be filled out</h1>
+            <Link to={`/helpdesk/${params.username}`}>Go back to home</Link>
         </div>
     )
 }

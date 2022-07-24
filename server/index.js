@@ -77,6 +77,25 @@ app.route("/users/:username").get(function(req, res){
     }
   })
 
+  app.route("/users/delete/:user_id/:log_id").delete(async (req, res) => {
+    try {
+      const user_id = req.params.user_id
+      const log = req.params.log_id
+
+      const filter = {_id: mongoose.Types.ObjectId(user_id)}
+      const change = {$pull: {
+        logs: {
+          id: log
+        }
+      }}
+
+      const result = await UserModel.updateOne(filter, change)
+      res.send(result)
+    } catch (error) {
+      console.log(error)
+    }    
+  })
+
 app.listen(3001, () => {
     console.log("Server is running")
 })

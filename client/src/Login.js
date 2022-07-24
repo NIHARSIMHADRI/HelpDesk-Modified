@@ -12,6 +12,8 @@ function Login() {
     const [failure, setFailure] = useState(true)
     const [userData, setUserData] = useState({})
 
+    const [checker, setChecker] = useState(false)
+
     const context = useContext(UserContext)
 
     const navigate = useNavigate()
@@ -24,21 +26,25 @@ function Login() {
         if (data != null) {
             setFailure(false)
             setUserData(data)
+            setChecker(false)
         } else {
+            console.log("setting to true")
             setFailure(true)
+            setChecker(true)
         }
         //setListOfUsers(data);
     };
 
     function validateUser() {
         checkUser()
+        console.log(failure + " what")
     }
 
     if (failure) {
         return (
             <div className="App">
     
-                <h1 className="helpdesk-title">The Log In was {failure ? "true" : "false"}</h1>
+                <h1 className="helpdesk-title">Log In Page</h1>
     
                 <div>
                     <div className='input-holder'>
@@ -50,7 +56,8 @@ function Login() {
                             setPassword(event.target.value)
                         }} />
                     </div>
-                    <Button variant="primary" onClick={validateUser}>Create User</Button>
+                    <Button variant="primary" onClick={validateUser}>Log In</Button>
+                    {checker &&  <h2 className="error">The Log In attempt has failed. Please try again</h2>}
                 </div>
             </div>
     

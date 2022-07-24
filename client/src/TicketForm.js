@@ -10,7 +10,7 @@ export default function TicketForm() {
 
     // got form validation help from here: https://www.youtube.com/watch?v=EYpdEYK25Dc&t=416s
     const startValues = {name:"", email:"", phoneNumber:"", shortDesc: "", desc: "", category: "", subcategory: "",
-    priority: 1, agentOption: true, agentAssign: ""}
+    priority: 1, agentOption: true, agentAssign: "", id: "!"}
 
     const [agentThere, setAgentThere] = useState(false)
 
@@ -35,6 +35,19 @@ export default function TicketForm() {
     }
 
     const params = useParams()
+
+    // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+    function makeid(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+          result += characters.charAt(Math.floor(Math.random() * 
+     charactersLength));
+       }
+       return result;
+    }
+
 
     // source: https://bobbyhadz.com/blog/react-check-if-email-is-valid
 
@@ -95,30 +108,22 @@ export default function TicketForm() {
     useEffect(() => {
         //console.log(formErrors)
         if (Object.keys(formErrors).length === 0 && submit) {
+            formValues.id = makeid(10)
             // default when not assigned to agent
             if (formValues.agentOption === true) {
                 formValues.agentAssign = params.username
-
-                axios.patch(`http://localhost:3001/users/${params.username}/logs/`, {
-                    addLog: formValues
-                }, {
-                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
-                }).then(response => {
-                    console.log(response)
-                }).catch(error => {
-                    console.log(error)
-                })
-            } else {
-                axios.patch(`http://localhost:3001/users/${formValues.agentAssign}/logs/`, {
-                    addLog: formValues
-                }, {
-                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
-                }).then(response => {
-                    console.log(response)
-                }).catch(error => {
-                    console.log(error)
-                })
             }
+                
+            axios.patch(`http://localhost:3001/users/${formValues.agentAssign}/logs/`, {
+                addLog: formValues
+            }, {
+                headers: { 'Content-type': 'application/json; charset=UTF-8' }
+            }).then(response => {
+                console.log(response)
+            }).catch(error => {
+                console.log(error)
+            })
+
             setFormSuccess(true)
             //console.log(formValues)
             // appendLog()

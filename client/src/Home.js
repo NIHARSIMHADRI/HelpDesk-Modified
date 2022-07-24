@@ -79,7 +79,7 @@ function Home() {
       <Card style={{color: 'green'}} className="login-card">
         <Card.Img src="https://picsum.photos/100/100" className="login-img"/>
         <Card.Body>
-          <Card.Title>Sign In Page</Card.Title>
+          <Card.Title>Sign Up Page</Card.Title>
           <Card.Text>Click here if you need to create an account</Card.Text>
           <Button variant="primary" onClick={() => {
             navigate("/signup")

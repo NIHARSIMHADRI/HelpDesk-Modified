@@ -1,31 +1,36 @@
 import './App.css';
-import {useState, useEffect, useContext} from "react"
-import {Button, Card} from 'react-bootstrap'
+import { useState, useEffect, useContext } from "react"
+import { Button, Card } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import {Link, useNavigate, useLocation, useParams} from "react-router-dom"
-import {UserContext} from './UserContext';
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom"
+import { UserContext } from './UserContext';
 import Header from "./Header"
 import axios from "axios"
+import clsx from "clsx"
 
 function HelpDesk(props) {
     const context = useContext(UserContext)
     const [name, setName] = useState("")
     const [logs, setLogs] = useState(null)
     const [data, setData] = useState(null)
+    const [logData, setLogData] = useState(null)
+    const navigate = useNavigate()
     const location = useLocation()
+
+    const colorMap = { "1": "green", "2": "yellow", "3": "red" }
 
     const params = useParams()
 
-    
+
     useEffect(() => {
         fetch(`http://localhost:3001/users/${params.user}`)
-        .then(res => res.json())
-        .then(data => {
-            //console.log(data)
-            setLogs(data.logs)
-            setData(data)
-            //console.log(data._id)
-        })
+            .then(res => res.json())
+            .then(data => {
+                //console.log(data)
+                setLogs(data.logs)
+                setData(data)
+                //console.log(data._id)
+            })
     }, [])
 
     /*
@@ -46,28 +51,60 @@ function HelpDesk(props) {
         axios.delete(`http://localhost:3001/users/delete/${data._id}/${event.target.value}`)
         window.location.reload();
     }
-    
+
+    function editLog(log) {
+
+        console.log(log)
+
+        navigate(`/helpdesk/new-ticket/${params.user}`, {
+            state: {
+                name: log.name,
+                email: log.email,
+                phone: log.phoneNumber,
+                shortDesc: log.shortDesc,
+                desc: log.desc,
+                category: log.category,
+                subcategory: log.subcategory,
+                priority: log.priority,
+                checked: log.agentOption,
+                agent: log.agentAssign,
+                user_id: data._id,
+                log_id: log.id
+            }
+        })
+    }
+
 
     return (
         <>
-        <Header username={params.user}/>
-        <h1 className='centered'>Welcome to your Helpdesk {params.user}</h1>
-        <br />
-        <h2 className="centered">Here are the tickets assigned to you</h2>
-        {(logs && data) && logs.map((log) => {
-            if (log != null && log.name != null) {
-                return <div className='ticket'>
-                <h1>{log.agentAssign}</h1>
-                <p>Category: {log.category}</p>
-                <p>Subcategory: {log.subcategory}</p>
-                <p>{log.desc}</p>
-                <p>{log.id}</p>
-                <button value={log.id} onClick={deleteLog}>Delete</button>
-                </div>
-            } else {
-                return null
-            }
-        })}
+            <Header username={params.user} />
+            <h1 className='centered'>Welcome to your Helpdesk {params.user}</h1>
+            <br />
+            <h2 className="centered">Here are the tickets assigned to you</h2>
+            {(logs && data) && logs.map((log) => {
+                if (log != null && log.name != null) {
+
+                    const styling = clsx("ticket", {
+                        "safe": colorMap[log.priority] === "green",
+                        "warning": colorMap[log.priority] === "yellow",
+                        "danger": colorMap[log.priority] === "red"
+                    })
+
+                    return <div className={styling}>
+
+                        <h1>{log.agentAssign}</h1>
+                        <p>Category: {log.category}</p>
+                        <p>Subcategory: {log.subcategory}</p>
+                        <p>{log.desc}</p>
+                        <p>{colorMap[log.priority]}</p>
+            
+                        <button value={log.id} onClick={deleteLog}>Delete</button>
+                        <button onClick={() => editLog(log)}>Edit</button>
+                    </div>
+                } else {
+                    return null
+                }
+            })}
         </>
     )
 }

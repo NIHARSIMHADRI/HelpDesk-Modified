@@ -96,6 +96,47 @@ app.route("/users/:username").get(function(req, res){
     }    
   })
 
+  app.route("/users/update/:user_id/:log_id").patch(async (req, res) => {
+    try {
+      const user_id = req.params.user_id
+      const log = req.params.log_id
+
+      const name = req.body.name
+      const email = req.body.email
+      const phone = req.body.phone
+      const shortDesc = req.body.shortDesc
+      const desc = req.body.desc
+      const category = req.body.category
+      const subcategory = req.body.subcategory
+      const priority = req.body.priority
+      const agentOption = req.body.agentOption
+      const agentAssign = req.body.agentAssign
+      const id = req.body.id
+
+      const filter = {_id: mongoose.Types.ObjectId(user_id), "logs.id": log}
+      const change = {
+        $set: {
+          "logs.$.name": name,
+          "logs.$.email": email,
+          "logs.$.phoneNumber": phone,
+          "logs.$.shortDesc": shortDesc,
+          "logs.$.desc": desc,
+          "logs.$.category": category,
+          "logs.$.subcategory": subcategory,
+          "logs.$.priority": priority,
+          "logs.$.agentOption": agentOption,
+          "logs.$.agentAssign": agentAssign,
+          "logs.$.id": id
+        }
+      }
+
+      const result = await UserModel.updateOne(filter, change)
+      res.send(result)
+    } catch (error) {
+      console.log(error)
+    }
+  })
+
 app.listen(3001, () => {
     console.log("Server is running")
 })

@@ -7,7 +7,7 @@ got css for ticket from Angela Yu Udemy class
 */
 
 .ticket {
-  background: #fff;
+  background-color: #fff;
   border-radius: 7px;
   box-shadow: 0 2px 5px #ccc;
   padding: 10px;
@@ -24,6 +24,18 @@ got css for ticket from Angela Yu Udemy class
   margin-bottom: 10px;
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+.safe {
+  background-color: green;
+}
+
+.warning {
+  background-color: yellow;
+}
+
+.danger {
+  background-color: red;
 }
 
 .bg-color {

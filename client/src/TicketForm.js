@@ -3,20 +3,31 @@ import { isPossiblePhoneNumber } from 'react-phone-number-input'
 import Header from "./Header.js"
 import Form from 'react-bootstrap/Form'
 import { Button, Col, Row, InputGroup } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams, useLocation } from "react-router-dom"
 import axios from 'axios'
 
 export default function TicketForm() {
 
+    const location = useLocation()
+
+    console.log(location)
+
+    const { state: exists } = location
+
     // got form validation help from here: https://www.youtube.com/watch?v=EYpdEYK25Dc&t=416s
-    const startValues = {name:"", email:"", phoneNumber:"", shortDesc: "", desc: "", category: "", subcategory: "",
-    priority: 1, agentOption: true, agentAssign: "", id: "!"}
+    const startValues = {
+        name: (exists ? exists.name : ""), email: (exists ? exists.email : ""),
+        phoneNumber: (exists ? exists.phone : ""), shortDesc: (exists ? exists.shortDesc : ""), desc: (exists ? exists.desc : ""),
+        category: (exists ? exists.category : ""), subcategory: (exists ? exists.subcategory : ""),
+        priority: (exists ? exists.priority : 1), agentOption: (exists ? exists.checked : false), agentAssign: (exists ? exists.agent : ""), id: (exists ? exists.log_id : "!")
+    }
 
     const [agentThere, setAgentThere] = useState(false)
 
     const stateNames = {
         name: "name", email: "email", phoneNumber: "phone number", shortDesc: "short description", desc: "description",
-        category: "category", subcategory: "subcategory", agentAssign: "agent"}
+        category: "category", subcategory: "subcategory", agentAssign: "agent"
+    }
 
     const [formValues, setFormValues] = useState(startValues)
     const [formErrors, setFormErrors] = useState({})
@@ -26,9 +37,9 @@ export default function TicketForm() {
     const [formSuccess, setFormSuccess] = useState(false)
 
     function handleChange(event) {
-        const {name, value} = event.target
+        const { name, value } = event.target
         setFormValues({
-            ...formValues, 
+            ...formValues,
             [name]: value
         })
         //console.log(formValues)
@@ -38,14 +49,14 @@ export default function TicketForm() {
 
     // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
     function makeid(length) {
-        var result           = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var result = '';
+        var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         var charactersLength = characters.length;
-        for ( var i = 0; i < length; i++ ) {
-          result += characters.charAt(Math.floor(Math.random() * 
-     charactersLength));
-       }
-       return result;
+        for (var i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() *
+                charactersLength));
+        }
+        return result;
     }
 
 
@@ -84,16 +95,16 @@ export default function TicketForm() {
     function assignAgent(event) {
         //console.log(event.target.checked)
 
-        const {name} = event.target
+        const { name } = event.target
 
         if (event.target.checked === false) {
             setFormValues({
-                ...formValues, 
+                ...formValues,
                 [name]: true
             })
         } else {
             setFormValues({
-                ...formValues, 
+                ...formValues,
                 [name]: false
             })
         }
@@ -108,21 +119,51 @@ export default function TicketForm() {
     useEffect(() => {
         //console.log(formErrors)
         if (Object.keys(formErrors).length === 0 && submit) {
-            formValues.id = makeid(10)
-            // default when not assigned to agent
-            if (formValues.agentOption === true) {
-                formValues.agentAssign = params.username
+
+            let existing = false
+
+            // this is an existing ticket that needs to be updated
+            if (formValues.id !== "!") {
+                existing = true
+
+                axios.patch(`http://localhost:3001/users/update/${exists.user_id}/${exists.log_id}/`, {
+                    name: formValues.name, 
+                    email: formValues.email, 
+                    phone: formValues.phoneNumber,  
+                    shortDesc: formValues.shortDesc,
+                    desc: formValues.desc, 
+                    category: formValues.category, 
+                    subcategory: formValues.subcategory, 
+                    priority: formValues.priority,
+                    agentOption: formValues.agentOption, 
+                    agentAssign: formValues.agentAssign, 
+                    id: formValues.id,
+                }, {
+                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
+                }).then(response => {
+                    console.log(response)
+                }).catch(error => {
+                    console.log(error)
+                })
             }
-                
-            axios.patch(`http://localhost:3001/users/${formValues.agentAssign}/logs/`, {
-                addLog: formValues
-            }, {
-                headers: { 'Content-type': 'application/json; charset=UTF-8' }
-            }).then(response => {
-                console.log(response)
-            }).catch(error => {
-                console.log(error)
-            })
+
+            if (!existing) {
+                formValues.id = makeid(10)
+                // default when not assigned to agent
+                if (formValues.agentOption === false) {
+                    formValues.agentAssign = params.username
+                }
+
+                axios.patch(`http://localhost:3001/users/${formValues.agentAssign}/logs/`, {
+                    addLog: formValues
+                }, {
+                    headers: { 'Content-type': 'application/json; charset=UTF-8' }
+                }).then(response => {
+                    console.log(response)
+                }).catch(error => {
+                    console.log(error)
+                })
+            }
 
             setFormSuccess(true)
             //console.log(formValues)
@@ -162,7 +203,7 @@ export default function TicketForm() {
         }
     }
     */
-    
+
     function checkVals(values) {
         const errors = {}
 
@@ -179,14 +220,14 @@ export default function TicketForm() {
         for (const value in formValues) {
             //console.log(formValues[value])
             if (value === "agentAssign") {
-                if (formValues.agentOption === false) {
+                if (formValues.agentOption === true) {
                     // make sure the field is filled when option to assign is selected
                     if (formValues[value] === "") {
                         errors[value] = `Please don't leave the ${stateNames[value]} as an empty field`
-                    // make sure the agent tryign to assign to is an actual agent
+                        // make sure the agent tryign to assign to is an actual agent
                     } else {
                         setValidate(!validate)
-                        
+
                         if (!agentThere) {
                             errors[value] = "Please make sure the agent exists"
                         }
@@ -198,7 +239,7 @@ export default function TicketForm() {
                             }
                         })
                         */
-                        
+
                     }
                 }
             }
@@ -227,20 +268,20 @@ export default function TicketForm() {
 
                 <Form.Group className="mb-3 w-50" controlId="formGridAddress1">
                     <Form.Label>Customer's Full Name </Form.Label>
-                    <Form.Control name="name" onChange={handleChange} placeholder="Name" />
+                    <Form.Control name="name" defaultValue={exists ? exists.name : ""} onChange={handleChange} placeholder="Name" />
                     <p className="error">{formErrors.name}</p>
                 </Form.Group>
 
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="formGridEmail">
                         <Form.Label>Customer's Email</Form.Label>
-                        <Form.Control name="email" onChange={handleChange} placeholder="123@gmail.com" />
+                        <Form.Control name="email" defaultValue={exists ? exists.email : ""} onChange={handleChange} placeholder="123@gmail.com" />
                         <p className="error">{formErrors.email}</p>
                     </Form.Group>
 
                     <Form.Group as={Col} controlId="formGridPassword">
                         <Form.Label>Customer's Phone Number</Form.Label>
-                        <Form.Control name="phoneNumber" onChange={handleChange} placeholder="+1234567890" />
+                        <Form.Control name="phoneNumber" defaultValue={exists ? exists.phone : ""} onChange={handleChange} placeholder="+1234567890" />
                         <Form.Text id="passwordHelpBlock" muted>
                             Phone number should start with + and be followed by 11 digits
                         </Form.Text>
@@ -250,32 +291,32 @@ export default function TicketForm() {
 
                 <Form.Group className="mb-3" controlId="formGridAddress2">
                     <Form.Label>Short Description</Form.Label>
-                    <Form.Control name="shortDesc" onChange={handleChange} placeholder="Brief Description of Customer's Issue" />
+                    <Form.Control name="shortDesc" defaultValue={exists ? exists.shortDesc : ""} onChange={handleChange} placeholder="Brief Description of Customer's Issue" />
                     <p className="error">{formErrors.shortDesc}</p>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formGridAddress2">
                     <Form.Label>Description</Form.Label>
-                    <Form.Control name="desc" onChange={handleChange} as="textarea" rows="4" columns="3" placeholder="Full Description of Customer's Issue" />
+                    <Form.Control name="desc" defaultValue={exists ? exists.desc : ""} onChange={handleChange} as="textarea" rows="4" columns="3" placeholder="Full Description of Customer's Issue" />
                     <p className="error">{formErrors.desc}</p>
                 </Form.Group>
 
                 <Row className="mb-3">
                     <Form.Group as={Col} controlId="formGridCity">
                         <Form.Label>Category</Form.Label>
-                        <Form.Control name="category" onChange={handleChange} />
+                        <Form.Control name="category" defaultValue={exists ? exists.category : ""} onChange={handleChange} />
                         <p className="error">{formErrors.category}</p>
                     </Form.Group>
 
                     <Form.Group as={Col} controlId="formGridZip">
                         <Form.Label>Subcategory</Form.Label>
-                        <Form.Control name="subcategory" onChange={handleChange}/>
+                        <Form.Control name="subcategory" defaultValue={exists ? exists.subcategory : ""} onChange={handleChange} />
                         <p className="error">{formErrors.subcategory}</p>
                     </Form.Group>
 
                     <Form.Group as={Col} controlId="formGridState">
                         <Form.Label>Priority Level</Form.Label>
-                        <Form.Select name="priority" value={formValues.priority} onChange={handleChange}>
+                        <Form.Select name="priority" defaultValue={exists ? exists.priority : 1} value={formValues.priority} onChange={handleChange}>
                             <option value={1}>1</option>
                             <option value={2}>2</option>
                             <option value={3}>3</option>
@@ -285,12 +326,12 @@ export default function TicketForm() {
 
                 <Row className="mb-2">
                     <Form.Group as={Col} id="formGridCheckbox">
-                        <Form.Check name="agentOption" type="checkbox" label="Assign to Agent" onClick={assignAgent} />
+                        <Form.Check name="agentOption" defaultChecked={exists ? exists.checked : false} type="checkbox" label="Assign to Agent" onClick={assignAgent} />
                     </Form.Group>
 
                     <Form.Group as={Col} controlId="formGridZip">
                         <Form.Label>Assign to Agent</Form.Label>
-                        <Form.Control name="agentAssign" disabled={formValues.agentOption} onChange={handleChange}/>
+                        <Form.Control name="agentAssign" defaultValue={exists ? exists.agent : ""} disabled={exists ? !exists.checked : true} onChange={handleChange} />
                         <p className="error">{formErrors.agentAssign}</p>
                     </Form.Group>
 

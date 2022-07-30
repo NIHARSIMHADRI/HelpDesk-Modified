@@ -7,20 +7,27 @@ import { UserContext } from './UserContext';
 import Header from "./Header"
 import axios from "axios"
 import clsx from "clsx"
+import BarChart from "./BarChart"
 
 function HelpDesk(props) {
     const context = useContext(UserContext)
     const [name, setName] = useState("")
     const [logs, setLogs] = useState(null)
-    const [data, setData] = useState(null)
+    const [allData, setAllData] = useState(null)
     const [logData, setLogData] = useState(null)
     const navigate = useNavigate()
     const location = useLocation()
 
+    const [allUsers, setAllUsers] = useState(null)
+
     const colorMap = { "1": "green", "2": "yellow", "3": "red" }
 
-    const params = useParams()
+    const [mapUsername, setMapUsername] = useState([])
+    const [mapLogsLength, setMapLogsLength] = useState([])
 
+    const [agentsPresent, setAgentsPresent] = useState(0)
+
+    const params = useParams()
 
     useEffect(() => {
         fetch(`http://localhost:3001/users/${params.user}`)
@@ -28,10 +35,39 @@ function HelpDesk(props) {
             .then(data => {
                 //console.log(data)
                 setLogs(data.logs)
-                setData(data)
+                setAllData(data)
                 //console.log(data._id)
             })
-    }, [])
+
+        fetch(`http://localhost:3001/users`)
+            .then(res => res.json())
+            .then(data => {
+                setAllUsers(data)
+
+                setAgentsPresent(data.length)
+
+                data.forEach(person => {
+                    setMapUsername(prevUsername => [...prevUsername, person.username])
+                    setMapLogsLength(prevLength => [...prevLength, person.logs.length - 1])
+                })
+            })
+    }, [params.user])
+
+    const barData = {
+        labels: mapUsername.slice(0,agentsPresent),
+        // datasets is an array of objects where each object represents a set of data to display corresponding to the labels above. for brevity, we'll keep it at one object
+        datasets: [
+            {
+                label: 'Popularity of colours',
+                data: mapLogsLength.slice(0,agentsPresent),
+                // you can set indiviual colors for each bar
+                backgroundColor: [
+                    "red"
+                ],
+                borderWidth: 1,
+            }
+        ],
+    }
 
     /*
     {logs && logs.map(log => {
@@ -46,9 +82,9 @@ function HelpDesk(props) {
     */
 
     function deleteLog(event) {
-        console.log(data._id)
+        console.log(allData._id)
         console.log(event.target.value)
-        axios.delete(`http://localhost:3001/users/delete/${data._id}/${event.target.value}`)
+        axios.delete(`http://localhost:3001/users/delete/${allData._id}/${event.target.value}`)
         window.location.reload();
     }
 
@@ -68,7 +104,7 @@ function HelpDesk(props) {
                 priority: log.priority,
                 checked: log.agentOption,
                 agent: log.agentAssign,
-                user_id: data._id,
+                user_id: allData._id,
                 log_id: log.id
             }
         })
@@ -78,10 +114,11 @@ function HelpDesk(props) {
     return (
         <>
             <Header username={params.user} />
+            {allUsers && console.log(agentsPresent)}
             <h1 className='centered'>Welcome to your Helpdesk {params.user}</h1>
             <br />
-            <h2 className="centered">Here are the tickets assigned to you</h2>
-            {(logs && data) && logs.map((log) => {
+            {(logs && allData && logs.length <= 1) && <h2 className="centered">Create new tickets to have them appear below</h2>}
+            {(logs && allData) && logs.map((log) => {
                 if (log != null && log.name != null) {
 
                     const styling = clsx("ticket", {
@@ -97,7 +134,7 @@ function HelpDesk(props) {
                         <p>Subcategory: {log.subcategory}</p>
                         <p>{log.desc}</p>
                         <p>{colorMap[log.priority]}</p>
-            
+
                         <button value={log.id} onClick={deleteLog}>Delete</button>
                         <button onClick={() => editLog(log)}>Edit</button>
                     </div>
@@ -105,6 +142,7 @@ function HelpDesk(props) {
                     return null
                 }
             })}
+            <BarChart chartData={barData} />
         </>
     )
 }

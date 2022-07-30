@@ -100,12 +100,12 @@ export default function TicketForm() {
         if (event.target.checked === false) {
             setFormValues({
                 ...formValues,
-                [name]: true
+                [name]: false
             })
         } else {
             setFormValues({
                 ...formValues,
-                [name]: false
+                [name]: true
             })
         }
     }
@@ -331,7 +331,7 @@ export default function TicketForm() {
 
                     <Form.Group as={Col} controlId="formGridZip">
                         <Form.Label>Assign to Agent</Form.Label>
-                        <Form.Control name="agentAssign" defaultValue={exists ? exists.agent : ""} disabled={exists ? !exists.checked : true} onChange={handleChange} />
+                        <Form.Control name="agentAssign" defaultValue={exists ? exists.agent : ""} disabled={exists ? !exists.checked : !formValues.agentOption} onChange={handleChange} />
                         <p className="error">{formErrors.agentAssign}</p>
                     </Form.Group>
 

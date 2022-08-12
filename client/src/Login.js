@@ -4,6 +4,8 @@ import { Button, Card } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import {Link, useNavigate, Router, useNavigationType} from "react-router-dom"
 import {UserContext} from "./UserContext.js"
+import jwt_decode from "jwt-decode"
+import google_client_id from './google_client';
 
 function Login() {
     const [listOfUsers, setListOfUsers] = useState([])
@@ -14,11 +16,38 @@ function Login() {
 
     const [checker, setChecker] = useState(false)
 
+    function handleCallbackResponse(response) {
+        console.log("Encoded JWT token: " + response.credential)
+        var obj = jwt_decode(response.credential)
+        // fix error of set not updating right away
+        //setUsername(obj.name)
+        //setPassword(obj.sub)
+        //postUser(obj.name, obj.sub)
+
+        console.log(obj)
+    }
+  
+    
+    // help from here https://www.youtube.com/watch?v=roxC8SMs7HU
+    useEffect(() => {
+      // eslint-disable-next-line no-undef
+      google.accounts.id.initialize({
+        client_id: google_client_id,
+        callback: handleCallbackResponse
+      })
+
+      // eslint-disable-next-line no-undef
+      google.accounts.id.renderButton(
+        document.getElementById("signIn"),
+        {theme: "outline", size: "large"}
+      )
+    }, [])
+
     const context = useContext(UserContext)
 
     const navigate = useNavigate()
 
-    const checkUser = async () => {
+    const checkUser = async (username, password) => {
         const res = await fetch(`http://localhost:3001/users/${username}/${password}`);
         const data = await res.json();
         console.log(data)
@@ -36,7 +65,7 @@ function Login() {
     };
 
     function validateUser() {
-        checkUser()
+        checkUser(username, password)
         console.log(failure + " what")
     }
 
@@ -57,6 +86,8 @@ function Login() {
                         }} />
                     </div>
                     <Button variant="primary" onClick={validateUser}>Log In</Button>
+                    <br />
+                    <div className="g-signin2" id="signIn"></div>
                     {checker &&  <h2 className="error">The Log In attempt has failed. Please try again</h2>}
                 </div>
             </div>
@@ -66,7 +97,7 @@ function Login() {
         return (
             <>
             {console.log("You doing anything?")}
-            {context.modifyUser(userData)}
+            {context.modifyUser(userData)}  
             {navigate(`/helpdesk/${username}`, {
                 state: {
                     username: userData.username,

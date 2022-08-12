@@ -5,10 +5,11 @@ import Login from "./Login.js"
 import SignUp from "./SignUp.js"
 import HelpDesk from "./HelpDesk.js"
 import TicketForm from "./TicketForm.js"
+import DisplayTickets from "./DisplayTickets.js"
 import { UserProvider } from "./UserContext.js"
+import { useEffect } from "react"
 
 function App() {
-
 
   return (
     <BrowserRouter>
@@ -19,6 +20,7 @@ function App() {
           <Route exact path="/signup" element={<SignUp />} />
           <Route exact path="/helpdesk/:user" element={<HelpDesk />} />
           <Route exact path="/helpdesk/new-ticket/:username" element={<TicketForm />} />
+          <Route exact path="/helpdesk/all-incidents/:username" element={<DisplayTickets />} />
         </Routes>
       </UserProvider>
     </BrowserRouter>

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button, Card } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import useTrait from "./useTrait.js"
+import jwt_decode from "jwt-decode"
 
 function SignUp() {
     const [listOfUsers, setListOfUsers] = useState([])
@@ -13,14 +14,6 @@ function SignUp() {
     const lengthMet = useTrait(false)
     const usernameExists = useTrait(false)
     const [success, setSuccess] = useState(false)
-
-    //const currentLengthMet = useRef()
-    //const currenUsernameExists = useRef()
-
-    //currentLengthMet.current = lengthMet
-    //currenUsernameExists.current = usernameExists
-
-   //let chkUsernameExists = true
 
     const getUsers = async () => {
         const res = await fetch("http://localhost:3001/users");
@@ -52,7 +45,7 @@ function SignUp() {
         }
     };
 
-    const postUser = async () => {
+    const postUser = async (username, password) => {
         const res = await fetch("http://localhost:3001/users", {
             method: "POST",
             headers: {
@@ -139,7 +132,7 @@ function SignUp() {
 
         
         if (!usernameExists.get() && lengthMet.get()) {
-            postUser()
+            postUser(username, password)
             console.log("user posted")
             setSuccess(true)
         }
@@ -164,6 +157,7 @@ function SignUp() {
                     }} />
                 </div>
                 <Button variant="primary" onClick={createUser}>Create User</Button>
+                <br />
             </div>
 
             {!lengthMet.get() && <h1 className='error-text'>Please make sure your username and password are at least 5 characters long.</h1>}

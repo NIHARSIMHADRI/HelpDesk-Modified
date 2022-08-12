@@ -116,10 +116,15 @@ function HelpDesk(props) {
             <Header username={params.user} />
             {allUsers && console.log(agentsPresent)}
             <h1 className='centered'>Welcome to your Helpdesk {params.user}</h1>
+            
+            {(logs && logs.filter(x => x.agentOption === true).length === 0) ? 
+            <h1 className='centered'>No tickets have been assigned to you yet</h1> : 
+            <h1 className='centered'>Here are all the tickets that were assigned to you</h1>}
+
             <br />
-            {(logs && allData && logs.length <= 1) && <h2 className="centered">Create new tickets to have them appear below</h2>}
             {(logs && allData) && logs.map((log) => {
-                if (log != null && log.name != null) {
+                // these will only be the tickets assigned to this agent (not all the tickets)
+                if (log != null && log.name != null && log.agentOption === true) {
 
                     const styling = clsx("ticket", {
                         "safe": colorMap[log.priority] === "green",
@@ -143,6 +148,8 @@ function HelpDesk(props) {
                 }
             })}
             <BarChart chartData={barData} />
+            <br />
+            <Link to={`/login`}>Go back to Login</Link>
         </>
     )
 }

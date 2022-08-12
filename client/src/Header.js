@@ -13,10 +13,11 @@ export default function Header(props) {
                 </Navbar.Brand>
 
                 <Nav>
+                    <Nav.Link href={`helpdesk/${props.username}`}>Home</Nav.Link>
                     <Nav.Link href={`new-ticket/${props.username}`}>Create New Incident</Nav.Link>
-                    <Nav.Link href="all-incidents">All My Incidents</Nav.Link>
+                    <Nav.Link href={`all-incidents/${props.username}`}>All My Incidents</Nav.Link>
                     <Nav.Link href="agent-incidents">Search Agents Incidents</Nav.Link>
-                    <Nav.Link href="feedback">Suggest Feedback</Nav.Link>
+                    <Nav.Link href="https://uwmadison.co1.qualtrics.com/jfe/form/SV_0PnoiV6iZcT9yE6">Suggest Feedback</Nav.Link>
                 </Nav>
             </Navbar>
         </div>

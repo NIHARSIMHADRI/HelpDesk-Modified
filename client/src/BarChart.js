@@ -20,14 +20,14 @@ export default function BarChart(props) {
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Tickets Assigned'
+                                text: 'Total Tickets'
                             }
                         }
                     },
                     plugins: {
                         title: {
                             display: true,
-                            text: "Help Desk Agents"
+                            text: "Each Agent's Total Number of Tickets"
                         },
                         legend: {
                             display: false,

@@ -6,6 +6,7 @@ const UserSchema = new mongoose.Schema ({
         required: true
     },
     password: {
+        // used {} because can be string for normal password or object for Google OAuth
         type: String,
         required: true
     },

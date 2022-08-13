@@ -4,7 +4,7 @@ import Header from "./Header"
 import axios from "axios"
 import clsx from "clsx"
 
-export default function DisplayTickets() {
+export default function DisplayTickets(props) {
     const [logs, setLogs] = useState(null)
     const [allData, setAllData] = useState(null)
     const navigate = useNavigate()
